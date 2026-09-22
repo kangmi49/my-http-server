@@ -1,8 +1,8 @@
 from server import Server
 from urllib.parse import parse_qs
-from server.handler import TextHandler, JsonHandler, HtmlHandler 
+from server.handler import TextHandler, JsonHandler, HtmlHandler, FileHandler 
 
-app = Server()
+app = Server(max_workers=8)
 
 @app.route("/")
 def index(request, response):
@@ -66,6 +66,13 @@ app.add_handler(
         </body>
         </html>
         """
+    )
+)
+
+app.add_handler(
+    "/readme",
+    FileHandler(
+        "README.md"
     )
 )
 

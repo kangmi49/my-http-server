@@ -1,12 +1,17 @@
 import socket
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 from .router import Router
 from .plumbing import Request, Response
 
 
 class Server:
-    def __init__(self):
+    def __init__(self, max_workers=8):
         self.router = Router()
+
+        self.executor = ThreadPoolExecutor(
+            max_workers=max_workers,
+            thread_name_prefix="http-worker"
+        )
 
     def start(self, port=5000, host="", header_size=1024):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -14,10 +19,26 @@ class Server:
             sock.bind((host, port))
             sock.listen(1)
             print(f"Listening on http://{socket.getfqdn()}:{port}/")
+        try:
             while True:
-                conn, addr = sock.accept()
-                Thread(target=self.handle_connection, args=(conn, addr, header_size)).start()
 
+                conn, addr = sock.accept()
+
+                self.executor.submit(
+                    self.handle_connection,
+                    conn,
+                    addr,
+                    header_size
+                )
+
+        except KeyboardInterrupt:
+            print("\nServer shutting down...")
+
+        finally:
+            self.executor.shutdown(
+                wait=True
+            ) 
+            
     def handle_connection(self, conn, addr, header_size):
         request_bytes = conn.recv(header_size)
         with conn:
@@ -37,4 +58,3 @@ class Server:
 
     def add_handler(self, path, handler, method = "GET"):
         self.router.add_handler(path, handler, method)
-        

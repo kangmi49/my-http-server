@@ -55,3 +55,33 @@ class HtmlHandler(RequestHandler):
     def handle(self, request, response):
         response.headers["Content-Type"] = "text/html"
         response.body = self.html
+
+class FileHandler(RequestHandler):
+
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    def handle(
+        self,
+        request,
+        response
+    ):
+
+        try:
+
+            with open(
+                self.file_path,
+                "r",
+                encoding="utf-8"
+            ) as file:
+
+                response.body = file.read()
+
+            response.headers[
+                "Content-Type"
+            ] = "text/plain"
+
+        except FileNotFoundError:
+
+            response.status_code = 404
+            response.body = "File Not Found"
