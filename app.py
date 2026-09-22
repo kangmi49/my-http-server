@@ -1,5 +1,6 @@
 from server import Server
 from urllib.parse import parse_qs
+from server.handler import TextHandler, JsonHandler, HtmlHandler 
 
 app = Server()
 
@@ -36,6 +37,38 @@ def greet(request, response):
 </body>
 </html>
 """
+app.add_handler(
+    "/text",
+    TextHandler(
+        "Hello from TextHandler!"
+    )
+)
+
+
+app.add_handler(
+    "/api/status",
+    JsonHandler({
+        "status": "ok",
+        "server": "Mini HTTP Server",
+        "version": "1.0"
+    })
+)
+
+
+app.add_handler(
+    "/about",
+    HtmlHandler(
+        """
+        <html>
+        <body>
+            <h1>Mini HTTP Server</h1>
+            <p>Python OOP Demo</p>
+        </body>
+        </html>
+        """
+    )
+)
+
 
 if __name__ == "__main__":
     app.start(host="0.0.0.0", port=3000)

@@ -34,3 +34,7 @@ class Server:
         if methods is None:
             methods = ["GET"]
         return self.router.add_route(uri, methods)
+
+    def add_handler(self, path, handler, method = "GET"):
+        self.router.add_handler(path, handler, method)
+        
